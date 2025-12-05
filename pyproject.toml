@@ -1,0 +1,30 @@
+#[build-system]
+#requires = ["setuptools>=61.0"]
+#build-backend = "setuptools.build_backend"
+
+[project]
+name = "workout-tracker"
+version = "0.1.0"
+description = "Workout tracking with FastAPI and PySpark on AWS"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
