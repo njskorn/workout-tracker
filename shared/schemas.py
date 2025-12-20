@@ -93,8 +93,8 @@ class WorkoutLog(BaseModel):
 
 
 
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "workout_date": "2024-12-05",
                 "user_id": "nettle",
@@ -114,3 +114,4 @@ class WorkoutLog(BaseModel):
                 "notes": "Good shoulder workout!"
             }
         }
+    }
