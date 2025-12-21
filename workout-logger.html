@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Logger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; 
+            margin: 20px auto; 
+            max-width: 800px;
+            padding: 20 px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block; 
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%; 
+            padding: 8px; 
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #message {
+            margin-top: 20px; 
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda; 
+            color: #155724; 
+        }
+        .error {
+            background-color: #f8d7da; 
+            color: #721c24; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Workout Logger</h1>
+    <form id="workoutForm">
+        <div class="form-group">
+            <label for="user_id">User ID:</label>
+            <select id="user_id" required>
+                <option value="">Select User</option>
+                <option value="Nettle">Nettle</option>
+                <option value="Eric">Eric</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="workoutDate">Date:</label>
+            <input type="date" id="workoutDate" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="exerciseName">Exercise Name:</label>
+            <input type="text" id="exerciseName" placeholder="e.g. Bench Press" required>
+        </div>
+
+        <div class="form-group">
+            <label for="equipment">Equipment:</label>
+            <select id="equipment" required>
+                <option value="">Select Equipment</option>
+                <option value="barbell">Barbell</option>
+                <option value="dumbbell">Dumbbell</option>
+                <option value="kettlebell">Kettlebell</option>
+                <option value="machine">Machine</option>
+                <option value="bodyweight">Bodyweight</option>
+                <option value="cable">Cable</option>
+                <option value="band">Band</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Sets 1:</label>
+            <input type="number" placeholder="Reps" id="reps1" required>
+            <input type="number" placeholder="Weight (lbs)" id="weight1" required>
+        </div>
+
+        <button type="submit">Log Workout</button>
+    
+    </form>
+    <div id="message"></div>
+
+    <script>
+        // set today's date as default
+        document.getElementById('workoutDate').valueAsDate = new Date();
+
+        // handle form submission
+        document.getElementById('workoutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // get form values
+            const workoutDate = document.getElementById('workoutDate').value;
+            const user_id = document.getElementById('user_id').value;
+            const exerciseName = document.getElementById('exerciseName').value;
+            const equipment = document.getElementById('equipment').value;
+            const reps = parseInt(document.getElementById('reps1').value);
+            const weight = parseFloat(document.getElementById('weight1').value);
+
+            // build workout object
+            const workout = {
+                workout_date: workoutDate,
+                user_id: user_id,
+                exercises: [{
+                    name: exerciseName,
+                    equipment: equipment,
+                    sets: [{ 
+                        reps: reps, 
+                        weight_lbs: weight 
+                    }]
+                }]
+            };
+
+            // send POST request to API
+            try {
+                const response = await fetch('http://localhost:8000/workouts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(workout)
+                });
+
+                const data = await response.json();
+
+                // show success message
+                const messageDiv = document.getElementById('message');
+                messageDiv.className = 'success';
+                messageDiv.textContent = "Workout Logged Successfully! Total Volume: " + data.total_volume + " lbs";
+
+                // clear form
+                document.getElementById('workoutForm').reset();
+                document.getElementById('workoutDate').valueAsDate = new Date();
+            } catch (error) {
+                // show error message
+                const messageDiv = document.getElementById('message');
+                messageDiv.className = 'error';
+                messageDiv.textContent = "Error logging workout: " + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 """FastAPI application for workout training"""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from shared.schemas import WorkoutLog
 from repositories.local_workout_repository import LocalWorkoutRepository
 
@@ -12,6 +13,15 @@ app = FastAPI(
     title="Workout Training API",
     description="API for logging and analyzing workout training sessions",
     version="0.1.0"
+)
+
+# Enable CORS for all origins (for development purposes)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # ok for local development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")
