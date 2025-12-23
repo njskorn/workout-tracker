@@ -13,6 +13,9 @@ class EquipmentType(str, Enum):
     BODYWEIGHT = "bodyweight"     # No external weight (weight_lbs=0)
     CABLE = "cable"               # Cable machine
     BAND = "band"                 # Resistance band
+    EXERCISE_BALL = "exercise ball" # No external weight (weight_lbs=0)
+    FOAM_ROLL = "foam roll"         # No external weight (weight_lbs=0)
+    MEDICINE_BALL = "medicine ball" # Medicine ball 
 
 class Set(BaseModel):
     """Single set of an exercise with optional goal tracking"""
