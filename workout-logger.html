@@ -69,7 +69,17 @@
         
         <div class="form-group">
             <label for="exerciseName">Exercise Name:</label>
-            <input type="text" id="exerciseName" placeholder="e.g. Bench Press" required>
+            <!-- test input field with autocomplete-->
+            <input
+                type="text" 
+                id="exerciseName" 
+                list="exerciseList"
+                placeholder="Start typing an exercise name..."
+                required
+            >
+            <datalist id="exerciseList">
+                <!-- Options will be populated by javascript -->
+            </datalist>
         </div>
 
         <div class="form-group">
@@ -83,6 +93,9 @@
                 <option value="bodyweight">Bodyweight</option>
                 <option value="cable">Cable</option>
                 <option value="band">Band</option>
+                <option value="exercise ball">Exercise Ball</option>
+                <option value="foam roll">Foam Roll</option>
+                <option value="medicine ball">Medicine Ball</option>
             </select>
         </div>
 
@@ -101,8 +114,102 @@
     <div id="message"></div>
 
     <script>
-        // set today's date as default
-        document.getElementById('workoutDate').valueAsDate = new Date();
+        // global variable to store exercises
+        let exerciseData = null;
+
+        // populate exercise datalist
+        // first fetch exercises from API
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 'DOMContentLoaded' executes this event when HTML is fully loaded
+            // async allows us to use await
+
+            // set today's date as default
+            document.getElementById('workoutDate').valueAsDate = new Date();
+
+            // fetch exercises from API
+            try {
+                // await: wait for this to compelte before continuing
+                const response = await fetch('http://localhost:8000/exercises');
+
+                // Check request
+                if (!response.ok) {
+                    throw new Error('Failed to fetch exercises');
+                }
+
+                //parse JSON response into JS array
+                const exercises = await response.json();
+
+                // save to global variable
+                exerciseData = exercises;
+
+                // get the datalist element from HTML
+                const datalist = document.getElementById('exerciseList');
+
+                // loop through exercises and add them as options
+                exercises.forEach(exercise => {
+                    // create option element
+                    const option = document.createElement('option');
+                    // set value to exercise name
+                    option.value = exercise.name;
+                    // append option to datalist
+                    datalist.appendChild(option);
+                });
+
+                // log success o console
+                console.log(`Exercises ${exercises.length} loaded successfully`);
+            } catch (error) {
+                // log error to console
+                console.error('Error fetching exercises:', error);
+                alert('Could not load exercises. Please refresh the page.');
+            }
+        });
+
+        // listen for when the user selects an exercise from the dropdown
+        // run whenever the exercise name input changes
+        document.getElementById('exerciseName').addEventListener('input', function() {
+            // 'this' refers to the input element
+            // 'this.value' is the current value the user selected
+            const selectedExerciseName = this.value;
+
+            // catch if exercises are not loaded
+            if (!exerciseData) {
+                return;
+            }
+
+            // find the exercise in the database
+            const selectedExercise = exerciseData.find(ex => ex.name === selectedExerciseName);
+
+            // if we have a match and it has equipment info
+            if (selectedExercise && selectedExercise.equipment) {
+                // get the equipment dropdown element
+                const equipmentDropdown = document.getElementById('equipment');
+
+                // map database equipment to dropdown value
+                const equipmentMap = {
+                    'body only': 'bodyweight',    // Database → Our schema
+                    'kettlebells': 'kettlebell',  // plural → singular
+                    'bands': 'band',               // plural → singular
+                    'e-z curl bar': 'barbell'    // treat as barbell
+                };
+
+                // get equipement from database
+                let equipmentValue = selectedExercise.equipment;
+
+                // using mapping if available
+                if (equipmentMap[equipmentValue]) {
+                    equipmentValue = equipmentMap[equipmentValue];
+                }
+
+                // set the dropdown to the correct equipment if it exists
+                const validOptions = Array.from(equipmentDropdown.options).map(opt => opt.value);
+                if (validOptions.includes(equipmentValue)) {
+                    equipmentDropdown.value = equipmentValue;
+                }
+
+                // log 
+                console.log(`Auto-filled equipment: ${equipmentValue} for ${selectedExerciseName}`);
+            }
+        });
 
         // add number of sets
         let setCount = 1;
