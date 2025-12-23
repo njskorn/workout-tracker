@@ -69,7 +69,17 @@
         
         <div class="form-group">
             <label for="exerciseName">Exercise Name:</label>
-            <input type="text" id="exerciseName" placeholder="e.g. Bench Press" required>
+            <!-- test input field with autocomplete-->
+            <input
+                type="text" 
+                id="exerciseName" 
+                list="exerciseList"
+                placeholder="Start typing an exercise name..."
+                required
+            >
+            <datalist id="exerciseList">
+                <!-- Options will be populated by javascript -->
+            </datalist>
         </div>
 
         <div class="form-group">
@@ -101,8 +111,49 @@
     <div id="message"></div>
 
     <script>
-        // set today's date as default
-        document.getElementById('workoutDate').valueAsDate = new Date();
+        // populate exercise datalist
+        // first fetch exercises from API
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 'DOMContentLoaded' executes this event when HTML is fully loaded
+            // async allows us to use await
+
+            // set today's date as default
+            document.getElementById('workoutDate').valueAsDate = new Date();
+
+            // fetch exercises from API
+            try {
+                // await: wait for this to compelte before continuing
+                const response = await fetch('http://localhost:8000/exercises');
+
+                // Check request
+                if (!response.ok) {
+                    throw new Error('Failed to fetch exercises');
+                }
+
+                //parse JSON response into JS array
+                const exercises = await response.json();
+
+                // get the datalist element from HTML
+                const datalist = document.getElementById('exerciseList');
+
+                // loop through exercises and add them as options
+                exercises.forEach(exercise => {
+                    // create option element
+                    const option = document.createElement('option');
+                    // set value to exercise name
+                    option.value = exercise.name;
+                    // append option to datalist
+                    datalist.appendChild(option);
+                });
+
+                // log success o console
+                console.log(`Exercises ${exercises.length} loaded successfully`);
+            } catch (error) {
+                // log error to console
+                console.error('Error fetching exercises:', error);
+                alert('Could not load exercises. Please refresh the page.');
+            }
+        });
 
         // add number of sets
         let setCount = 1;

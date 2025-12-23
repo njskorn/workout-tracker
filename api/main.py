@@ -1,5 +1,7 @@
 """FastAPI application for workout training"""
 
+import json
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from shared.schemas import WorkoutLog
@@ -63,3 +65,30 @@ def get_workout(user_id: str, workout_date: str):
         }
     
     return workout
+
+@app.get("/exercises")
+def get_exercises(
+    equipment: str | None = None,
+    primary_muscle: str | None = None,
+    level: str | None = None
+):
+    """Retrieve list of supported exercises
+    Query Parameters:
+        equipment: Filter by equipment (e.g., 'barbell', 'dumbbell')
+        primary_muscle: Filter by muscle (e.g., 'chest', 'biceps')
+        level: Filter by difficulty (e.g., 'beginner', 'intermediate')"""
+    
+    exercises_file = Path("shared/data/exercises.json")
+    
+    # load JSON
+    with open(exercises_file, "r") as f:
+        exercises_data = json.load(f)
+
+    if equipment:
+        exercises_data = [ex for ex in exercises_data if ex.get('equipment') == equipment]
+    if primary_muscle:
+        exercises_data = [ex for ex in exercises_data if primary_muscle in ex.get('primaryMuscles', [])]
+    if level:
+        exercises_data = [ex for ex in exercises_data if ex.get('level') == level]
+    
+    return exercises_data
