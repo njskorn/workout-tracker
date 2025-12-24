@@ -67,50 +67,63 @@
             <input type="date" id="workoutDate" required>
         </div>
         
-        <div class="form-group">
-            <label for="exerciseName">Exercise Name:</label>
-            <!-- test input field with autocomplete-->
-            <input
-                type="text" 
-                id="exerciseName" 
-                list="exerciseList"
-                placeholder="Start typing an exercise name..."
-                required
-            >
-            <datalist id="exerciseList">
-                <!-- Options will be populated by javascript -->
-            </datalist>
-        </div>
+        <!-- Container for all exercises-->
+        <div id="exercisesContainer">
+            <!-- Single exercise (will be duplicated) -->
+            <div class="exercise-block">
+                <h3>Exercise 1</h3>
+                
+                <div class="form-group">
+                    <label>Exercise Name:</label>
+                    <input
+                        type="text"
+                        class="exercise-name"
+                        list="exerciseList"
+                        placeholder="Start typing an exercise name..."
+                        required
+                    >
+                </div>
 
-        <div class="form-group">
-            <label for="equipment">Equipment:</label>
-            <select id="equipment" required>
-                <option value="">Select Equipment</option>
-                <option value="barbell">Barbell</option>
-                <option value="dumbbell">Dumbbell</option>
-                <option value="kettlebell">Kettlebell</option>
-                <option value="machine">Machine</option>
-                <option value="bodyweight">Bodyweight</option>
-                <option value="cable">Cable</option>
-                <option value="band">Band</option>
-                <option value="exercise ball">Exercise Ball</option>
-                <option value="foam roll">Foam Roll</option>
-                <option value="medicine ball">Medicine Ball</option>
-            </select>
-        </div>
+                <div class="form-group">
+                    <label>Equipment:</label>
+                    <select class="equipment" required>
+                        <option value="">Select Equipment</option>
+                        <option value="barbell">Barbell</option>
+                        <option value="dumbbell">Dumbbell</option>
+                        <option value="kettlebell">Kettlebell</option>
+                        <option value="machine">Machine</option>
+                        <option value="bodyweight">Bodyweight</option>
+                        <option value="cable">Cable</option>
+                        <option value="band">Band</option>
+                        <option value="exercise ball">Exercise Ball</option>
+                        <option value="foam roll">Foam Roll</option>
+                        <option value="medicine ball">Medicine Ball</option>
+                    </select>
+                </div>
 
-        <div id="setsContainer">
-            <div class="form-group set-inputs">
-                <label>Set 1:</label>
-                <input type="number" placeholder="Reps" min="1" class="set-reps" min="1" required>
-                <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                <div class="sets-container">
+                    <div class="form-group set-inputs">
+                        <label>Set 1:</label>
+                        <input type="number" placeholder="Reps" min="1" class="set-reps" required>
+                        <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                    </div>
+                </div>
+
+                <!-- Add set button -->
+                <button type="button" class="add-set-btn" onclick="addSet(this)">+ Add Set</button>
             </div>
         </div>
 
-        <button type="button" onclick="addSet()">+ Add Set</button>
+        <!-- Add exercise button -->
+        <button type="button" onclick="addExercise()">+ Add Exercise</button>
+
         <button type="submit">Log Workout</button>
-    
+
     </form>
+    <datalist id="exerciseList">
+    <!-- Options will be populated by javascript -->
+    </datalist>
+    
     <div id="message"></div>
 
     <script>
@@ -165,58 +178,77 @@
         });
 
         // listen for when the user selects an exercise from the dropdown
+        // update: listen for any changes in any exercise name
         // run whenever the exercise name input changes
-        document.getElementById('exerciseName').addEventListener('input', function() {
-            // 'this' refers to the input element
-            // 'this.value' is the current value the user selected
-            const selectedExerciseName = this.value;
+        document.addEventListener('input', function(event) {
+            // check if the changed element is an exercise name input
+            // `event.target` is the element that triggered the event
+            if (event.target.classList.contains('exercise-name')) {
+                // get selected exercise name
+                const selectedExerciseName = event.target.value;
 
-            // catch if exercises are not loaded
-            if (!exerciseData) {
-                return;
-            }
-
-            // find the exercise in the database
-            const selectedExercise = exerciseData.find(ex => ex.name === selectedExerciseName);
-
-            // if we have a match and it has equipment info
-            if (selectedExercise && selectedExercise.equipment) {
-                // get the equipment dropdown element
-                const equipmentDropdown = document.getElementById('equipment');
-
-                // map database equipment to dropdown value
-                const equipmentMap = {
-                    'body only': 'bodyweight',    // Database → Our schema
-                    'kettlebells': 'kettlebell',  // plural → singular
-                    'bands': 'band',               // plural → singular
-                    'e-z curl bar': 'barbell'    // treat as barbell
-                };
-
-                // get equipement from database
-                let equipmentValue = selectedExercise.equipment;
-
-                // using mapping if available
-                if (equipmentMap[equipmentValue]) {
-                    equipmentValue = equipmentMap[equipmentValue];
+                // catch if exercises are not loaded
+                if (!exerciseData) {
+                    return;
                 }
 
-                // set the dropdown to the correct equipment if it exists
-                const validOptions = Array.from(equipmentDropdown.options).map(opt => opt.value);
-                if (validOptions.includes(equipmentValue)) {
-                    equipmentDropdown.value = equipmentValue;
-                }
+                // find the exercise in the database
+                const selectedExercise = exerciseData.find(ex => ex.name === selectedExerciseName);
 
-                // log 
-                console.log(`Auto-filled equipment: ${equipmentValue} for ${selectedExerciseName}`);
+                // if we have a match and it has equipment info
+                if (selectedExercise && selectedExercise.equipment) {
+                    // 'event.target.closest()' finds the nearest parent with that class
+                    const exerciseBlock = event.target.closest('.exercise-block');
+                    // get the equipment dropdown element
+                    const equipmentDropdown = exerciseBlock.querySelector('.equipment');
+
+                    // map database equipment to dropdown value
+                    const equipmentMap = {
+                        'body only': 'bodyweight',    // Database → Our schema
+                        'kettlebells': 'kettlebell',  // plural → singular
+                        'bands': 'band',               // plural → singular
+                        'e-z curl bar': 'barbell'    // treat as barbell
+                    };
+
+                    // get equipement from database
+                    let equipmentValue = selectedExercise.equipment;
+
+                    // using mapping if available
+                    if (equipmentMap[equipmentValue]) {
+                        equipmentValue = equipmentMap[equipmentValue];
+                    }
+
+                    // set the dropdown to the correct equipment if it exists
+                    const validOptions = Array.from(equipmentDropdown.options).map(opt => opt.value);
+                    if (validOptions.includes(equipmentValue)) {
+                        equipmentDropdown.value = equipmentValue;
+                    }
+
+                    // log 
+                    console.log(`Auto-filled equipment: ${equipmentValue} for ${selectedExerciseName}`);
+                }
             }
         });
 
-        // add number of sets
-        let setCount = 1;
+        // Track set counts for each exercise separately
+        // use a map to store: exerciseBlock → setCount
+        const setCounts = new Map();
 
-        function addSet(){
+        function addSet(button){
+            // 'button' = the "Add Set" button that was clicked
+            // Find which exercise block this button belongs to
+            const exerciseBlock = button.closest('.exercise-block');
+            // Get or initialize current set count
+            let setCount = setCounts.get(exerciseBlock) || 1;
+
+            // increment set count
             setCount++;
-            const setsContainer = document.getElementById('setsContainer');
+            setCounts.set(exerciseBlock, setCount);
+
+            // Find the sets container within THIS exercise block
+            const setsContainer = exerciseBlock.querySelector('.sets-container');
+            
+            // Create new set div
             const setDiv = document.createElement('div');
             setDiv.className = 'form-group set-inputs';
             setDiv.innerHTML = `
@@ -229,16 +261,111 @@
         }
 
         function removeSet(button) {
+            // Find the exercise block
+            const exerciseBlock = button.closest('.exercise-block');
+            
+            // Get current set count
+            let setCount = setCounts.get(exerciseBlock) || 1;
+            
+            // Only remove if more than 1 set
             if (setCount > 1) {
+                // Remove the set div
                 button.parentElement.remove();
+                
+                // Decrement count
                 setCount--;
+                setCounts.set(exerciseBlock, setCount);
+                
+                // Renumber remaining sets in THIS exercise
+                const setInputs = exerciseBlock.querySelectorAll('.set-inputs');
+                setInputs.forEach((setDiv, index) => {
+                    setDiv.querySelector('label').textContent = `Set ${index + 1}:`;
+                });
             }
-
-            // renumber other sets
-            document.querySelectorAll('.set-inputs').forEach((setDiv, index) => {
-                setDiv.querySelector('label').textContent = `Set ${index + 1}:`;
-            });
         }
+
+        // track how many exercises we have
+        let exerciseCount = 1;
+
+        function addExercise() {
+            exerciseCount++;
+
+            // get exercise container
+            const exercisesContainer = document.getElementById('exercisesContainer');
+
+            // Create a new exercise block (copy structure from first one)
+            const exerciseDiv = document.createElement('div');
+            exerciseDiv.className = 'exercise-block';
+            
+            // Build the HTML for the new exercise
+            exerciseDiv.innerHTML = `
+                <h3>Exercise ${exerciseCount}</h3>
+                
+                <div class="form-group">
+                    <label>Exercise Name:</label>
+                    <input
+                        type="text"
+                        class="exercise-name"
+                        list="exerciseList"
+                        placeholder="Start typing an exercise name..."
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Equipment:</label>
+                    <select class="equipment" required>
+                        <option value="">Select Equipment</option>
+                        <option value="barbell">Barbell</option>
+                        <option value="dumbbell">Dumbbell</option>
+                        <option value="kettlebell">Kettlebell</option>
+                        <option value="machine">Machine</option>
+                        <option value="bodyweight">Bodyweight</option>
+                        <option value="cable">Cable</option>
+                        <option value="band">Band</option>
+                        <option value="exercise ball">Exercise Ball</option>
+                        <option value="foam roll">Foam Roll</option>
+                        <option value="medicine ball">Medicine Ball</option>
+                    </select>
+                </div>
+
+                <div class="sets-container">
+                    <div class="form-group set-inputs">
+                        <label>Set 1:</label>
+                        <input type="number" placeholder="Reps" min="1" class="set-reps" required>
+                        <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                    </div>
+                </div>
+
+                <button type="button" class="add-set-btn" onclick="addSet(this)">+ Add Set</button>
+                <button type="button" onclick="removeExercise(this)" style="background-color: #f44336; margin-top: 10px;">Remove Exercise</button>
+            `;
+            
+            // Add the new exercise to the container
+            exercisesContainer.appendChild(exerciseDiv);
+            
+            console.log(`Added Exercise ${exerciseCount}`);
+        }
+
+        function removeExercise(button) {
+            // Only allow removal if more than 1 exercise
+            if (exerciseCount > 1) {
+                // Remove the exercise block
+                button.closest('.exercise-block').remove();
+                
+                // Decrement counter
+                exerciseCount--;
+                
+                // Renumber remaining exercises
+                const exerciseBlocks = document.querySelectorAll('.exercise-block');
+                exerciseBlocks.forEach((block, index) => {
+                    block.querySelector('h3').textContent = `Exercise ${index + 1}`;
+                });
+                
+                console.log(`Removed exercise. Now have ${exerciseCount} exercises.`);
+            }
+        }
+
 
         // handle form submission
         document.getElementById('workoutForm').addEventListener('submit', async (e) => {
