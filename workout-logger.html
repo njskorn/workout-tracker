@@ -369,32 +369,63 @@
 
         // handle form submission
         document.getElementById('workoutForm').addEventListener('submit', async (e) => {
+            // prevent default form submission (which would reload the page)
             e.preventDefault();
             
-            // get form values
+            // get the simple fields (same as before)
             const workoutDate = document.getElementById('workoutDate').value;
-            const user_id = document.getElementById('user_id').value;
-            const exerciseName = document.getElementById('exerciseName').value;
-            const equipment = document.getElementById('equipment').value;
-            const setInputs = document.querySelectorAll('.set-inputs');
-            const sets = Array.from(setInputs).map(setDiv => {
-                const reps = parseInt(setDiv.querySelector('.set-reps').value);
-                const weight = parseFloat(setDiv.querySelector('.set-weight').value);
-                return { reps, weight_lbs: weight };
-            });
-
-            // build workout object
-            const workout = {
-                workout_date: workoutDate,
-                user_id: user_id,
-                exercises: [{
-                    name: exerciseName,
+            const userId = document.getElementById('user_id').value;
+            
+            // get all exercise blocks from the page
+            // querySelectorAll returns a NodeList (similar to a list in Python)
+            const exerciseBlocks = document.querySelectorAll('.exercise-block');
+            
+            // loop through each exercise block and extract data
+            // Array.from() converts NodeList to Array so we can use .map()
+            const exercises = Array.from(exerciseBlocks).map(block => {
+                // For each exercise block, extract:
+                
+                // exercise name
+                const name = block.querySelector('.exercise-name').value;
+                
+                // equipment
+                const equipment = block.querySelector('.equipment').value;
+                
+                // get all sets within THIS exercise block
+                const setInputs = block.querySelectorAll('.set-inputs');
+                
+                // loop through each set and extract reps/weight
+                const sets = Array.from(setInputs).map(setDiv => {
+                    // get the two input fields within this set
+                    const reps = parseInt(setDiv.querySelector('.set-reps').value);
+                    const weight = parseFloat(setDiv.querySelector('.set-weight').value);
+                    
+                    // return set object (matches our Pydantic schema)
+                    return {
+                        reps: reps,
+                        weight_lbs: weight
+                    };
+                });
+                
+                // return exercise object (matches our Pydantic schema)
+                return {
+                    name: name,
                     equipment: equipment,
                     sets: sets
-                }]
+                };
+            });
+            
+            // build the complete workout object
+            const workout = {
+                workout_date: workoutDate,
+                user_id: userId,
+                exercises: exercises  // Now an ARRAY of exercises containing array of sets
             };
-
-            // send POST request to API
+            
+            // log it so we can see what we're sending (helpful for debugging)
+            console.log('Sending workout:', JSON.stringify(workout, null, 2));
+            
+            // send to API
             try {
                 const response = await fetch('http://localhost:8000/workouts', {
                     method: 'POST',
@@ -403,17 +434,54 @@
                     },
                     body: JSON.stringify(workout)
                 });
-
+                
                 const data = await response.json();
-
+                
                 // show success message
                 const messageDiv = document.getElementById('message');
                 messageDiv.className = 'success';
-                messageDiv.textContent = "Workout Logged Successfully! Total Volume: " + data.total_volume + " lbs";
-
-                // clear form
+                messageDiv.textContent = `Workout Logged Successfully! ${data.exercises} exercise(s), Total Volume: ${data.total_volume} lbs`;
+                
+                // clear the form
                 document.getElementById('workoutForm').reset();
                 document.getElementById('workoutDate').valueAsDate = new Date();
+                
+                // reset to single exercise
+                document.getElementById('exercisesContainer').innerHTML = `
+                    <div class="exercise-block">
+                        <h3>Exercise 1</h3>
+                        <div class="form-group">
+                            <label>Exercise Name:</label>
+                            <input type="text" class="exercise-name" list="exerciseList" placeholder="Start typing an exercise name..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Equipment:</label>
+                            <select class="equipment" required>
+                                <option value="">Select Equipment</option>
+                                <option value="barbell">Barbell</option>
+                                <option value="dumbbell">Dumbbell</option>
+                                <option value="kettlebell">Kettlebell</option>
+                                <option value="machine">Machine</option>
+                                <option value="bodyweight">Bodyweight</option>
+                                <option value="cable">Cable</option>
+                                <option value="band">Band</option>
+                                <option value="exercise ball">Exercise Ball</option>
+                                <option value="foam roll">Foam Roll</option>
+                                <option value="medicine ball">Medicine Ball</option>
+                            </select>
+                        </div>
+                        <div class="sets-container">
+                            <div class="form-group set-inputs">
+                                <label>Set 1:</label>
+                                <input type="number" placeholder="Reps" min="1" class="set-reps" required>
+                                <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                            </div>
+                        </div>
+                        <button type="button" class="add-set-btn" onclick="addSet(this)">+ Add Set</button>
+                    </div>
+                `;
+                exerciseCount = 1;
+                
             } catch (error) {
                 // show error message
                 const messageDiv = document.getElementById('message');
