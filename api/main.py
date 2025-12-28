@@ -1,6 +1,8 @@
 """FastAPI application for workout training"""
 
 import json
+from datetime import date as date_type
+import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -92,3 +94,45 @@ def get_exercises(
         exercises_data = [ex for ex in exercises_data if ex.get('level') == level]
     
     return exercises_data
+
+
+@app.get("/exercises/{user_id}/{exercise_name}/last")
+def get_last_exercise_performance(user_id: str, exercise_name: str):
+    """Retrieve the last performance of a specific exercise for a user"""
+    
+    # get user's workout directory
+    user_workout_dir = Path(f"local_storage/workouts/{user_id}")
+
+    # check if directory exists
+    if not user_workout_dir.exists():
+        return {
+            "message": "No workouts found for the given user",
+            "found": False
+        }
+
+    # gather all workout files, sorted newest first
+    workout_files = []
+    for year_dir in sorted(user_workout_dir.iterdir(), reverse=True):
+        if not year_dir.is_dir():
+            continue
+        for month_dir in sorted(year_dir.iterdir(), reverse=True):
+            if not month_dir.is_dir():
+                continue
+            for day_file in sorted(month_dir.glob("*.json"), reverse=True):
+                    workout_files.append(day_file)
+    
+    # search for the exercise in the workouts
+    for workout_file in workout_files:
+        with open(workout_file, "r") as f:
+            workout_data = json.load(f)
+            
+            # look for this exercise in the workout
+            for exercise in workout_data.get("exercises", []):
+                if exercise['name'] == exercise_name:
+                    return {
+                        "found": True,
+                        "workout_date": workout_data.get("workout_date"),
+                        "exercise": exercise
+                    }
+    # Exercise never performed before
+    return {"found": False, "message": f"No history found for '{exercise_name}'"}
