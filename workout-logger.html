@@ -104,8 +104,10 @@
                 <div class="sets-container">
                     <div class="form-group set-inputs">
                         <label>Set 1:</label>
-                        <input type="number" placeholder="Reps" min="1" class="set-reps" required>
-                        <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                        <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps">
+                        <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight">
+                        <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
+                        <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
                     </div>
                 </div>
 
@@ -180,7 +182,7 @@
         // listen for when the user selects an exercise from the dropdown
         // update: listen for any changes in any exercise name
         // run whenever the exercise name input changes
-        document.addEventListener('input', function(event) {
+        document.addEventListener('input', async function(event) {
             // check if the changed element is an exercise name input
             // `event.target` is the element that triggered the event
             if (event.target.classList.contains('exercise-name')) {
@@ -195,6 +197,7 @@
                 // find the exercise in the database
                 const selectedExercise = exerciseData.find(ex => ex.name === selectedExerciseName);
 
+                // Part 1: Auto-fill equipment
                 // if we have a match and it has equipment info
                 if (selectedExercise && selectedExercise.equipment) {
                     // 'event.target.closest()' finds the nearest parent with that class
@@ -226,6 +229,83 @@
 
                     // log 
                     console.log(`Auto-filled equipment: ${equipmentValue} for ${selectedExerciseName}`);
+                
+                    // Part 2: Fetch last performance and pre-fill goals
+            
+                    // Get the user_id from the form
+                    // We need this to look up their workout history
+                    const userId = document.getElementById('user_id').value;
+                    
+                    // Only fetch history if user has been selected
+                    if (!userId) {
+                        console.log('Select user first before loading goals');
+                        return;
+                    }
+                    
+                    try {
+                        // Encode exercise name for URL
+                        // Spaces become %20, special characters are escaped
+                        const encodedExerciseName = encodeURIComponent(selectedExerciseName);
+                        
+                        // Call our API to get last time this user did this exercise
+                        const response = await fetch(`http://localhost:8000/exercises/${userId}/${encodedExerciseName}/last`);
+                        const data = await response.json();
+                        
+                        // Check if we found a previous workout
+                        if (data.found) {
+                            console.log(`Found last workout for ${selectedExerciseName} on ${data.workout_date}`);
+                            
+                            // Get the sets container for THIS exercise block
+                            const setsContainer = exerciseBlock.querySelector('.sets-container');
+                            
+                            // Clear any existing sets
+                            setsContainer.innerHTML = '';
+                            
+                            // Get the sets from last workout
+                            const lastSets = data.exercise.sets;
+                            
+                            // Create a set for each set they did last time
+                            lastSets.forEach((lastSet, index) => {
+                                // Create new set div
+                                const setDiv = document.createElement('div');
+                                setDiv.className = 'form-group set-inputs';
+                                
+                                // Use last workout's GOAL as this workout's GOAL
+                                // If they didn't have a goal last time, use their actual as starting point
+                                const goalReps = lastSet.goal_reps || lastSet.reps;
+                                const goalWeight = lastSet.goal_weight_lbs || lastSet.weight_lbs;
+                                
+                                // Build the HTML for this set
+                                // Goals are pre-filled, actuals are empty (user will enter them)
+                                setDiv.innerHTML = `
+                                    <label>Set ${index + 1}:</label>
+                                    <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps" value="${goalReps}">
+                                    <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight" value="${goalWeight}">
+                                    <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
+                                    <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
+                                    ${index > 0 ? '<button type="button" onclick="removeSet(this)" style="background-color: #f44336;">Remove</button>' : ''}
+                                `;
+                                
+                                // Add this set to the container
+                                setsContainer.appendChild(setDiv);
+                            });
+                            
+                            // Update the set counter for this exercise
+                            // So "Add Set" knows how many we have
+                            setCounts.set(exerciseBlock, lastSets.length);
+                            
+                            console.log(`Pre-filled ${lastSets.length} sets with goals from last workout`);
+                            
+                        } else {
+                            // No previous workout found - that's okay!
+                            // User will just fill in manually for first time
+                            console.log(`No previous workout found for ${selectedExerciseName} - first time doing this exercise!`);
+                        }
+                        
+                    } catch (error) {
+                        // Something went wrong with the fetch
+                        console.error('Error fetching last workout:', error);
+                    }
                 }
             }
         });
@@ -253,8 +333,10 @@
             setDiv.className = 'form-group set-inputs';
             setDiv.innerHTML = `
                 <label>Set ${setCount}:</label>
-                <input type="number" placeholder="Reps" min="1" class="set-reps" required>
-                <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps">
+                <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight">
+                <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
+                <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
                 <button type="button" onclick="removeSet(this)" style="background-color: #f44336;">Remove</button>
             `;
             setsContainer.appendChild(setDiv);
@@ -332,8 +414,10 @@
                 <div class="sets-container">
                     <div class="form-group set-inputs">
                         <label>Set 1:</label>
-                        <input type="number" placeholder="Reps" min="1" class="set-reps" required>
-                        <input type="number" placeholder="Weight (lbs)" min="0" step="0.5" class="set-weight" required>
+                        <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps">
+                        <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight">
+                        <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
+                        <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
                     </div>
                 </div>
 
@@ -399,11 +483,15 @@
                     // get the two input fields within this set
                     const reps = parseInt(setDiv.querySelector('.set-reps').value);
                     const weight = parseFloat(setDiv.querySelector('.set-weight').value);
+                    const goalReps = setDiv.querySelector('.set-goal-reps').value;
+                    const goalWeight = setDiv.querySelector('.set-goal-weight').value;
                     
                     // return set object (matches our Pydantic schema)
                     return {
                         reps: reps,
-                        weight_lbs: weight
+                        weight_lbs: weight,
+                        goal_reps: goalReps ? parseInt(goalReps) : null,
+                        goal_weight_lbs: goalWeight ? parseFloat(goalWeight) : null
                     };
                 });
                 
