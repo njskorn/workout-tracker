@@ -417,7 +417,7 @@
                             lastSets.forEach((lastSet, index) => {
                                 // Create new set div
                                 const setDiv = document.createElement('div');
-                                setDiv.className = 'form-group set-inputs';
+                                setDiv.className = 'set-row';
                                 
                                 // Use last workout's GOAL as this workout's GOAL
                                 // If they didn't have a goal last time, use their actual as starting point
@@ -427,12 +427,29 @@
                                 // Build the HTML for this set
                                 // Goals are pre-filled, actuals are empty (user will enter them)
                                 setDiv.innerHTML = `
-                                    <label>Set ${index + 1}:</label>
-                                    <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps" value="${goalReps}">
-                                    <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight" value="${goalWeight}">
-                                    <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
-                                    <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
-                                    ${index > 0 ? '<button type="button" onclick="removeSet(this)" style="background-color: #f44336;">Remove</button>' : ''}
+                                    <label class="set-label-col">${index + 1}</label>
+                                    
+                                    <div class="input-group">
+                                        <label class="mobile-label">Goal Reps:</label>
+                                        <input type="number" class="input-col set-goal-reps" min="0" value="${goalReps}">
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label class="mobile-label">Goal Weight:</label>
+                                        <input type="number" class="input-col set-goal-weight" min="0" step="0.5" value="${goalWeight}">
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label class="mobile-label">Actual Reps:</label>
+                                        <input type="number" class="input-col set-reps" min="0" required>
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label class="mobile-label">Actual Weight:</label>
+                                        <input type="number" class="input-col set-weight" min="0" step="0.5" required>
+                                    </div>
+                                    
+                                    ${index > 0 ? '<button type="button" class="action-col" onclick="removeSet(this)" style="background-color: #f44336;">Remove</button>' : '<span class="action-col"></span>'}
                                 `;
                                 
                                 // Add this set to the container
@@ -663,7 +680,7 @@
                 const equipment = block.querySelector('.equipment').value;
                 
                 // get all sets within THIS exercise block
-                const setInputs = block.querySelectorAll('.set-inputs');
+                const setInputs = block.querySelectorAll('.set-row');
                 
                 // loop through each set and extract reps/weight
                 const sets = Array.from(setInputs).map(setDiv => {
