@@ -48,6 +48,126 @@
             background-color: #f8d7da; 
             color: #721c24; 
         }
+
+        /* Sets table layout */
+        .sets-container {
+            margin-top: 15px;
+        }
+
+        .sets-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 1fr 1fr 1fr 80px;
+            gap: 8px;
+            padding: 8px 0;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            margin-bottom: 10px;
+        }
+
+        .set-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 1fr 1fr 1fr 80px;
+            gap: 8px;
+            padding: 8px 0;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .set-label-col {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .input-col {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .action-col {
+            text-align: center;
+        }
+
+        .action-col button {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        /* Hide mobile labels on desktop */
+        .mobile-label {
+            display: none;
+        }
+
+        .input-group {
+            /* On desktop, this doesn't affect grid layout */
+        }
+
+        @media (max-width: 768px) {
+            /* Add padding to page */
+            body {
+                padding: 15px;
+            }
+            
+            /* Hide column headers on mobile */
+            .sets-header {
+                display: none;
+            }
+            
+            /* Stack sets vertically */
+            .set-row {
+                display: block;
+                padding: 15px;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+            }
+            
+            /* Set label: "Set 1" */
+            .set-label-col::before {
+                content: "Set ";
+            }
+            
+            .set-label-col {
+                display: block;
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 15px;
+                text-align: left;
+            }
+            
+            /* Input groups: label and input side-by-side */
+            .input-group {
+                display: flex;
+                align-items: center;
+                margin-bottom: 12px;
+                gap: 10px;
+            }
+            
+            .mobile-label {
+                display: block;
+                font-weight: bold;
+                font-size: 14px;
+                min-width: 110px; /* Keep labels aligned */
+                flex-shrink: 0; /* Don't let label shrink */
+            }
+            
+            .input-col {
+                flex: 1; /* Input takes remaining space */
+                padding: 10px;
+                font-size: 16px;
+            }
+            
+            /* Remove button full width */
+            .action-col button {
+                width: 100%;
+                padding: 12px;
+                font-size: 16px;
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -102,12 +222,41 @@
                 </div>
 
                 <div class="sets-container">
-                    <div class="form-group set-inputs">
-                        <label>Set 1:</label>
-                        <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps">
-                        <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight">
-                        <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
-                        <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
+                    <!-- Column headers (always visible) -->
+                    <div class="sets-header">
+                        <span class="set-label-col">Set</span>
+                        <span class="input-col">Goal Reps</span>
+                        <span class="input-col">Goal Weight</span>
+                        <span class="input-col">Actual Reps</span>
+                        <span class="input-col">Actual Weight</span>
+                        <span class="action-col"></span> <!-- For remove button -->
+                    </div>
+                    
+                    <!-- First set -->
+                    <div class="set-row">
+                        <label class="set-label-col">1</label>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Goal Reps:</label>
+                            <input type="number" class="input-col set-goal-reps" min="0">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Goal Weight:</label>
+                            <input type="number" class="input-col set-goal-weight" min="0" step="0.5">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Actual Reps:</label>
+                            <input type="number" class="input-col set-reps" min="0" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Actual Weight:</label>
+                            <input type="number" class="input-col set-weight" min="0" step="0.5" required>
+                        </div>
+                        
+                        <span class="action-col"></span>
                     </div>
                 </div>
 
@@ -330,14 +479,28 @@
             
             // Create new set div
             const setDiv = document.createElement('div');
-            setDiv.className = 'form-group set-inputs';
+            setDiv.className = 'set-row';
             setDiv.innerHTML = `
-                <label>Set ${setCount}:</label>
-                <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps">
-                <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight">
-                <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
-                <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
-                <button type="button" onclick="removeSet(this)" style="background-color: #f44336;">Remove</button>
+                    <label class="set-label-col">${setCount}</label>
+    
+                    <div class="input-group">
+                        <label class="mobile-label">Goal Reps:</label>
+                        <input type="number" class="input-col set-goal-reps" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label class="mobile-label">Goal Weight:</label>
+                        <input type="number" class="input-col set-goal-weight" min="0" step="0.5">
+                    </div>
+                    <div class="input-group">
+                        <label class="mobile-label">Actual Reps:</label>
+                        <input type="number" class="input-col set-reps" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="mobile-label">Actual Weight:</label>
+                        <input type="number" class="input-col set-weight" min="0" step="0.5" required>
+                    </div>
+                    
+                    <button type="button" class="action-col" onclick="removeSet(this)" style="background-color: #f44336;">Remove</button>
             `;
             setsContainer.appendChild(setDiv);
         }
@@ -412,12 +575,36 @@
                 </div>
 
                 <div class="sets-container">
-                    <div class="form-group set-inputs">
-                        <label>Set 1:</label>
-                        <input type="number" placeholder="Goal Reps" min="0" class="set-goal-reps">
-                        <input type="number" placeholder="Goal Weight" min="0" step="0.5" class="set-goal-weight">
-                        <input type="number" placeholder="Actual Reps" min="0" class="set-reps" required>
-                        <input type="number" placeholder="Actual Weight" min="0" step="0.5" class="set-weight" required>
+                    <div class="sets-header">
+                        <span class="set-label-col">Set</span>
+                        <span class="input-col">Goal Reps</span>
+                        <span class="input-col">Goal Weight</span>
+                        <span class="input-col">Actual Reps</span>
+                        <span class="input-col">Actual Weight</span>
+                        <span class="action-col"></span> <!-- For remove button -->
+                    </div>
+                    
+                    <div class="set-row">
+                        <label class="set-label-col">1</label>
+    
+                        <div class="input-group">
+                            <label class="mobile-label">Goal Reps:</label>
+                            <input type="number" class="input-col set-goal-reps" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label class="mobile-label">Goal Weight:</label>
+                            <input type="number" class="input-col set-goal-weight" min="0" step="0.5">
+                        </div>
+                        <div class="input-group">
+                            <label class="mobile-label">Actual Reps:</label>
+                            <input type="number" class="input-col set-reps" min="0" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="mobile-label">Actual Weight:</label>
+                            <input type="number" class="input-col set-weight" min="0" step="0.5" required>
+                        </div>
+                        
+                        <span class="action-col"></span> <!-- First set has no remove button -->
                     </div>
                 </div>
 
