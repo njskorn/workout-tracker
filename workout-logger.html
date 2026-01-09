@@ -476,6 +476,58 @@
             }
         });
 
+        // Filter exercises when equipment is selected
+        document.addEventListener('change', async function(event) {
+            // Check if an equipment dropdown was changed
+            if (event.target.classList.contains('equipment')) {
+                const selectedEquipment = event.target.value;
+                const exerciseBlock = event.target.closest('.exercise-block');
+                const exerciseInput = exerciseBlock.querySelector('.exercise-name');
+                
+                // Clear current exercise selection
+                exerciseInput.value = '';
+                
+                // Get the shared datalist
+                const datalist = document.getElementById('exerciseList');
+                
+                // Clear existing options
+                datalist.innerHTML = '';
+                
+                // Determine which exercises to fetch
+                let fetchUrl = 'http://localhost:8000/exercises';
+                
+                // If specific equipment selected (not empty or "all"), filter
+                if (selectedEquipment && selectedEquipment !== 'all' && selectedEquipment !== '') {
+                    fetchUrl += `?equipment=${selectedEquipment}`;
+                }
+                
+                try {
+                    // Fetch filtered exercises
+                    const response = await fetch(fetchUrl);
+                    const exercises = await response.json();
+                    
+                    // Populate datalist with filtered exercises
+                    exercises.forEach(exercise => {
+                        const option = document.createElement('option');
+                        option.value = exercise.name;
+                        datalist.appendChild(option);
+                    });
+                    
+                    console.log(`Loaded ${exercises.length} ${selectedEquipment || 'all'} exercises`);
+                    
+                    // Update placeholder
+                    if (selectedEquipment && selectedEquipment !== 'all') {
+                        exerciseInput.placeholder = `Type ${selectedEquipment} exercise name...`;
+                    } else {
+                        exerciseInput.placeholder = 'Start typing exercise name...';
+                    }
+                    
+                } catch (error) {
+                    console.error('Error filtering exercises:', error);
+                }
+            }
+        });
+
         // Track set counts for each exercise separately
         // use a map to store: exerciseBlock → setCount
         const setCounts = new Map();
