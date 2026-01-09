@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Logger</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Workout Logger</h1>
+    <form id="workoutForm">
+        <div class="form-group">
+            <label for="user_id">User ID:</label>
+            <select id="user_id" required>
+                <option value="">Select User</option>
+                <option value="Nettle">Nettle</option>
+                <option value="Eric">Eric</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="workoutDate">Date:</label>
+            <input type="date" id="workoutDate" required>
+        </div>
+        
+        <!-- Container for all exercises-->
+        <div id="exercisesContainer">
+            <!-- Single exercise (will be duplicated) -->
+            <div class="exercise-block">
+                <h3>Exercise 1</h3>
+
+                <div class="form-group">
+                    <label>Equipment:</label>
+                    <select class="equipment" required>
+                        <option value="">Select Equipment</option>
+                        <option value="barbell">Barbell</option>
+                        <option value="dumbbell">Dumbbell</option>
+                        <option value="kettlebell">Kettlebell</option>
+                        <option value="machine">Machine</option>
+                        <option value="bodyweight">Bodyweight</option>
+                        <option value="cable">Cable</option>
+                        <option value="band">Band</option>
+                        <option value="exercise ball">Exercise Ball</option>
+                        <option value="foam roll">Foam Roll</option>
+                        <option value="medicine ball">Medicine Ball</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Exercise Name:</label>
+                    <input
+                        type="text"
+                        class="exercise-name"
+                        list="exerciseList"
+                        placeholder="Start typing an exercise name..."
+                        required
+                    >
+                </div>
+
+                <div class="sets-container">
+                    <!-- Column headers (always visible) -->
+                    <div class="sets-header">
+                        <span class="set-label-col">Set</span>
+                        <span class="input-col">Goal Reps</span>
+                        <span class="input-col">Goal Weight</span>
+                        <span class="input-col">Actual Reps</span>
+                        <span class="input-col">Actual Weight</span>
+                        <span class="action-col"></span> <!-- For remove button -->
+                    </div>
+                    
+                    <!-- First set -->
+                    <div class="set-row">
+                        <label class="set-label-col">1</label>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Goal Reps:</label>
+                            <input type="number" class="input-col set-goal-reps" min="0">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Goal Weight:</label>
+                            <input type="number" class="input-col set-goal-weight" min="0" step="0.5">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Actual Reps:</label>
+                            <input type="number" class="input-col set-reps" min="0" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="mobile-label">Actual Weight:</label>
+                            <input type="number" class="input-col set-weight" min="0" step="0.5" required>
+                        </div>
+                        
+                        <span class="action-col"></span>
+                    </div>
+                </div>
+
+                <!-- Add set button -->
+                <button type="button" class="add-set-btn" onclick="addSet(this)">+ Add Set</button>
+            </div>
+        </div>
+
+        <!-- Add exercise button -->
+        <button type="button" onclick="addExercise()">+ Add Exercise</button>
+
+        <button type="submit">Log Workout</button>
+
+    </form>
+    <datalist id="exerciseList">
+    <!-- Options will be populated by javascript -->
+    </datalist>
+    
+    <div id="message"></div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>

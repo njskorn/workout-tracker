@@ -1,0 +1,163 @@
+body {
+    font-family: Arial, sans-serif; 
+    margin: 20px auto; 
+    max-width: 800px;
+    padding: 20 px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block; 
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+input, select, textarea {
+    width: 100%; 
+    padding: 8px; 
+    box-sizing: border-box;
+}
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+button:hover {
+    background-color: #45a049;
+}
+#message {
+    margin-top: 20px; 
+    padding: 10px;
+    border-radius: 5px;
+}
+.success {
+    background-color: #d4edda; 
+    color: #155724; 
+}
+.error {
+    background-color: #f8d7da; 
+    color: #721c24; 
+}
+
+/* Sets table layout */
+.sets-container {
+    margin-top: 15px;
+}
+
+.sets-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr 1fr 1fr 80px;
+    gap: 8px;
+    padding: 8px 0;
+    font-weight: bold;
+    border-bottom: 2px solid #333;
+    margin-bottom: 10px;
+}
+
+.set-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr 1fr 1fr 80px;
+    gap: 8px;
+    padding: 8px 0;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.set-label-col {
+    text-align: center;
+    font-weight: bold;
+}
+
+.input-col {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.action-col {
+    text-align: center;
+}
+
+.action-col button {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Hide mobile labels on desktop */
+.mobile-label {
+    display: none;
+}
+
+.input-group {
+    /* On desktop, this doesn't affect grid layout */
+}
+
+@media (max-width: 768px) {
+    /* Add padding to page */
+    body {
+        padding: 15px;
+    }
+    
+    /* Hide column headers on mobile */
+    .sets-header {
+        display: none;
+    }
+    
+    /* Stack sets vertically */
+    .set-row {
+        display: block;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    /* Set label: "Set 1" */
+    .set-label-col::before {
+        content: "Set ";
+    }
+    
+    .set-label-col {
+        display: block;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    
+    /* Input groups: label and input side-by-side */
+    .input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+    
+    .mobile-label {
+        display: block;
+        font-weight: bold;
+        font-size: 14px;
+        min-width: 110px; /* Keep labels aligned */
+        flex-shrink: 0; /* Don't let label shrink */
+    }
+    
+    .input-col {
+        flex: 1; /* Input takes remaining space */
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    /* Remove button full width */
+    .action-col button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+}
