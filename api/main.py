@@ -50,6 +50,68 @@ def create_workout(workout: WorkoutLog):
         "total_volume": workout.total_volume
     }
 
+@app.get("/workouts")
+def get_all_workouts(user_id: str | None = None):
+    """
+    Get all workouts, optionally filtered by user.
+    Returns list of workouts with summary info.
+    """
+    workouts_dir = Path("local_storage/workouts")
+    
+    # Check if directory exists
+    if not workouts_dir.exists():
+        return []
+    
+    all_workouts = []
+    
+    # Walk through user directories
+    for user_dir in workouts_dir.iterdir():
+        # Skip if filtering by user and this isn't the user
+        if user_id and user_dir.name != user_id:
+            continue
+            
+        if not user_dir.is_dir():
+            continue
+        
+        # Walk through year/month/day structure
+        for year_dir in user_dir.iterdir():
+            if not year_dir.is_dir():
+                continue
+            for month_dir in year_dir.iterdir():
+                if not month_dir.is_dir():
+                    continue
+                for workout_file in month_dir.glob("*.json"):
+                    # Read the workout file
+                    with open(workout_file, 'r') as f:
+                        workout_data = json.load(f)
+                    
+                    # Add summary info
+                    workout_summary = {
+                        "workout_date": workout_data["workout_date"],
+                        "user_id": workout_data["user_id"],
+                        "num_exercises": len(workout_data["exercises"]),
+                        "total_volume": sum(
+                            sum(s["reps"] * s["weight_lbs"] for s in ex["sets"])
+                            for ex in workout_data["exercises"]
+                        ),
+                        "exercises": [
+                            {
+                                "name": ex["name"],
+                                "num_sets": len(ex["sets"]),
+                                "max_weight": max(s["weight_lbs"] for s in ex["sets"]),
+                                "total_reps": sum(s["reps"] for s in ex["sets"])
+                            }
+                            for ex in workout_data["exercises"]
+                        ]
+                    }
+                    
+                    all_workouts.append(workout_summary)
+    
+    # Sort by date (newest first)
+    all_workouts.sort(key=lambda w: w["workout_date"], reverse=True)
+    
+    return all_workouts
+
 @app.get("/workouts/{user_id}/{workout_date}")
 def get_workout(user_id: str, workout_date: str):
     """Retriieve a workout by user ID and date (YYYY-MM-DD)"""
